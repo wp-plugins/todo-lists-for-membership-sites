@@ -1,6 +1,6 @@
 <?php
 /*
-Plugin Name: Todo Lists
+Plugin Name: To Do List Member
 Plugin URI: http://prosperfi.com
 Description: Todo list for membership sites
 Version: 1.0
