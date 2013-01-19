@@ -1,18 +1,18 @@
-=== Todo Lists ===
+=== To Do List Member ===
 Contributors: trenton
 Donate link:
 Tags: todo list, tasks
 Requires at least: 3.0.1
 Tested up to: 3.5
-Stable tag: 1.0.0.0
+Stable tag: 1.1
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
-Todo Lists adds todolists and tasks using custom taxonomy and post type to your blog.
+To Do List Member adds todolists and tasks using custom taxonomy and post type to your blog.
 
 == Description ==
 
-Todo Lists adds todo lists and tasks using custom taxonomy and post type to your blog.
+To Do List Member adds todo lists and tasks using custom taxonomy and post type to your blog.
 
 The site admin creates the todo lists and each user can track their own progress.
 
@@ -22,7 +22,7 @@ The plugin adds two buttons to the visual editor, one to insert a todo list and 
 
 == Installation ==
 
-Upload the todolists.zip to your Wordpress blog using the admin backend and activate it.
+Download the plugin and upload the zip-file to your Wordpress blog using the admin backend and activate it.
 
 == Frequently Asked Questions ==
 
@@ -36,10 +36,13 @@ Yes.
 
 == Changelog ==
 
+= 1.1 =
+* Renamed to To Do List Member
+
 = 1.0 =
 * Updated for multisite.
 
 == Upgrade Notice ==
 
-= 1.0 =
+= 1.1 =
 Multisite compatible.
