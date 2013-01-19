@@ -3,7 +3,7 @@
 Plugin Name: To Do List Member
 Plugin URI: http://prosperfi.com
 Description: Todo list for membership sites
-Version: 1.0
+Version: 1.1
 Author: Trent Jessee
 Author URI:  http://prosperfi.com
 License: GPLv2 or later
