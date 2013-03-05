@@ -36,7 +36,31 @@ Yes, it's developed and tested for both single and multisite installs.
 
 Yes.
 
+== Screenshots ==
+
+1. Screenshot 1
+2. Screenshot 2
+3. Screenshot 3
+4. Screenshot 4
+5. Screenshot 5
+6. Screenshot 6
+7. Screenshot 7
+8. Screenshot 8
+9. Screenshot 9
+10. Screenshot 10
+11. Screenshot 11
+12. Screenshot 12
+13. Screenshot 13
+14. Screenshot 14
+15. Screenshot 15
+16. Screenshot 16
+17. Screenshot 17
+
 == Changelog ==
+
+= 1.2 =
+* Added screenshots
+* Updated plugin info
 
 = 1.1 =
 * Renamed to To Do List Member
