@@ -3,7 +3,7 @@
 Plugin Name: To Do List Member
 Plugin URI: http://www.watchmanadvisors.com/to-do-list-member-wordpress-plugin/
 Description: Todo list for membership sites
-Version: 1.2
+Version: 1.3
 Author: Trent Jessee
 Author URI:  http://prosperfi.com
 License: GPLv2 or later
@@ -25,6 +25,7 @@ class WPTodoList
 		add_action('wp_ajax_todolists', array($this, 'todolists_wp_ajax_nopriv_todolists'));
 		add_action('wp_ajax_nopriv_todolists', array($this, 'todolists_wp_ajax_nopriv_todolists'));
 		add_filter('wp_terms_checklist_args', array($this, 'checked_not_ontop'), 1, 2 );
+		add_action('wp_footer', array($this,'todolists_footer'));
 	}
 	
 	public function todolists_register_activation($networkwide)
@@ -280,6 +281,12 @@ class WPTodoList
 
 		echo "</table>";
 		die();
+	}
+
+	function todolists_footer()
+	{
+		$content = '<div style="width: 100%; text-align: center; font-size: 10px; height: 15px; position: relative;">Powered by <a href="http://www.watchmanadvisors.com/to-do-list-member-wordpress-plugin/" target="_blank">"To Do List Member"</a></div>';
+		echo $content;
 	}
 }
 new WPTodoList();
