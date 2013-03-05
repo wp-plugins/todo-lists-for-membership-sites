@@ -1,9 +1,9 @@
 <?php
 /*
 Plugin Name: To Do List Member
-Plugin URI: http://prosperfi.com
+Plugin URI: http://www.watchmanadvisors.com/to-do-list-member-wordpress-plugin/
 Description: Todo list for membership sites
-Version: 1.1
+Version: 1.2
 Author: Trent Jessee
 Author URI:  http://prosperfi.com
 License: GPLv2 or later

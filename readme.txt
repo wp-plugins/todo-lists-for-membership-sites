@@ -4,7 +4,7 @@ Donate link:
 Tags: todo list, tasks
 Requires at least: 3.0.1
 Tested up to: 3.5
-Stable tag: 1.1
+Stable tag: 1.2
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -19,6 +19,8 @@ The site admin creates the todo lists and each user can track their own progress
 Todo lists and progress bars are inserted into any post or page using shortcodes.
 
 The plugin adds two buttons to the visual editor, one to insert a todo list and one to insert a progress bar.
+
+Screenshots and a more detailed description can be found here: http://www.watchmanadvisors.com/to-do-list-member-wordpress-plugin/
 
 == Installation ==
 
