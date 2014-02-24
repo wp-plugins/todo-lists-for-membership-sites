@@ -1,0 +1,5 @@
+Changelog TodoList
+
+08 Jan 2014
+- 22.14
+	- Fixed bug with order tasks
