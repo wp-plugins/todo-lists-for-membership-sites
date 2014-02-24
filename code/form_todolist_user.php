@@ -21,9 +21,9 @@ class WPTodoList_FormTodoList
 		}
 
 		$args = array(
-			'numberposts' => -1,
-			'post_type' => 'task',
-			'post_status' => 'publish'
+			'numberposts' 	=> -1,
+			'post_type' 	=> 'task',
+			'post_status' 	=> 'publish',
 		);
 		$tasks = get_posts ($args);
 
@@ -65,19 +65,17 @@ class WPTodoList_FormTodoList
 
 		foreach($terms as $term)
 		{
-
 			echo "<div style='font-size: 1.5em; font-weight: bold; margin: 5px 0px;'>" . $term->name . "</div>";
 
 			$id = $term->term_id;
 
 			if(!empty($term_tasks[$id]))
 			{
-
 				foreach($term_tasks[$id] as $task)
 				{
 					$checked = "";
 					if(!empty($usertasks[$task->ID])) $checked = " checked='checked' ";
-					echo "<div style='position: relative; float: left;'><input type='checkbox'  name='todolists_task_id[" . $task->ID . "]' class='todolists_task' id='todolists_task_id[" . $task->ID . "]' $checked /><label for='todolists_task_id[" . $task->ID . "]'>" . $task->post_title . "</label></div>";
+					echo "<div style='position: relative; float: left;'><input type='checkbox'  name='todolists_task_id[" . $task->ID . "]' class='todolists_task_sdc".$listid."' id='todolists_task_id[" . $task->ID . "]' $checked /><label for='todolists_task_id[" . $task->ID . "]'>" . $task->post_title . "</label></div>";
 					?>
 					
 					<div class='todolists_heading' style='margin-left: 20px; margin-top: 5px; float: left; cursor: pointer; border: solid 1px #aaaaaa; width: 10px; height: 10px; position: relative;'><div style='margin: 4px 2px; height: 2px; background-color: #aaaaaa;'></div><div style='position: absolute; top: 2px; bottom: 2px; left: 4px; right: 4px; background-color: #aaaaaa;' class='todolists_plus'></div></div>
@@ -106,7 +104,7 @@ class WPTodoList_FormTodoList
 						{
 							$checked = "";
 							if(!empty($usertasks[$task->ID])) $checked = " checked='checked' ";
-							echo "<div style='position: relative; float: left;'><input type='checkbox'  name='todolists_task_id[" . $task->ID . "]' class='todolists_task' id='todolists_task_id[" . $task->ID . "]' $checked /><label for='todolists_task_id[" . $task->ID . "]'>" . $task->post_title . "</label></div>";
+							echo "<div style='position: relative; float: left;'><input type='checkbox'  name='todolists_task_id[" . $task->ID . "]' class='todolists_task_sdc".$listid."' id='todolists_task_id[" . $task->ID . "]' $checked /><label for='todolists_task_id[" . $task->ID . "]'>" . $task->post_title . "</label></div>";
 							?>
 							
 							<div class='todolists_heading' style='margin-left: 20px; margin-top: 5px; float: left; cursor: pointer; border: solid 1px #aaaaaa; width: 10px; height: 10px; position: relative;'><div style='margin: 4px 2px; height: 2px; background-color: #aaaaaa;'></div><div style='position: absolute; top: 2px; bottom: 2px; left: 4px; right: 4px; background-color: #aaaaaa;' class='todolists_plus'></div></div>
@@ -151,9 +149,9 @@ class WPTodoList_FormTodoList
 		}
 
 		$args = array(
-			'numberposts' => -1,
-			'post_type' => 'task',
-			'post_status' => 'publish'
+			'numberposts' 	=> -1,
+			'post_type' 	=> 'task',
+			'post_status' 	=> 'publish'
 		);
 		$tasks = get_posts ($args);
 
@@ -260,13 +258,13 @@ class WPTodoList_FormTodoList
 				height: 20px;
 				background-image: url("<?php echo plugins_url('img/pbar-ani.gif',dirname(__FILE__)); ?>");
 			}
-			#progressbar
+			#progressbar_sdc<?php echo $listid; ?>
 			{
 				margin-top: 10px;
 				margin-bottom: 10px;
 				position: relative;
 			}
-			#todolist_progressbar_header
+			#todolist_progressbar_header_sdc<?php echo $listid; ?>
 			{
 				position: absolute;
 				top: 3px;
@@ -274,13 +272,35 @@ class WPTodoList_FormTodoList
 				font-size: 12px;
 			}
 			</style>
-			<div id="progressbar"><?php echo "<div id='todolist_progressbar_header'><div>Completed {$completed} out of {$total} tasks, {$percent}%</div></div>"; ?></div>
+			<div id="progressbar_sdc<?php echo $listid; ?>"><?php echo "<div id='todolist_progressbar_header_sdc".$listid."'><div>Completed {$completed} out of {$total} tasks, {$percent}%</div></div>"; ?></div>
 			<script>
 				jQuery(document).ready(function()
 				{
-					jQuery("#progressbar").progressbar(
+					jQuery("#progressbar_sdc<?php echo $listid; ?>").progressbar(
 					{
 						value: <?php echo round($percent,0); ?>
+					});
+
+					jQuery(".todolists_task_sdc<?php echo $listid; ?>").change(function()
+					{
+						var _taskid = jQuery(this).attr("id").replace("todolists_task_id[","").replace("]","");
+						var _status = jQuery(this).is(":checked");
+
+						var taskdata = {
+									action: "updatetask",
+									taskid: _taskid,
+									status: _status
+								};
+
+						jQuery.post("<?php echo admin_url("admin-ajax.php"); ?>", taskdata, function(data)
+						{
+							//alert(data);
+							var taskcountdetails = data.split("_");
+							jQuery("#progressbar_sdc<?php echo $listid; ?>").progressbar('option','value',parseInt(taskcountdetails[2]));
+							jQuery("#todolist_progressbar_header_sdc<?php echo $listid; ?>").html("<div>Completed " + taskcountdetails[0] + " out of " + taskcountdetails[1] + " tasks, " + taskcountdetails[2] + "%</div>");
+
+						});
+
 					});
 				});
 			</script>
@@ -309,9 +329,9 @@ class WPTodoList_FormTodoList
 		}
 
 		$args = array(
-			'numberposts' => -1,
-			'post_type' => 'task',
-			'post_status' => 'publish'
+			'numberposts' 	=> -1,
+			'post_type' 	=> 'task',
+			'post_status' 	=> 'publish'
 		);
 		$tasks = get_posts ($args);
 
