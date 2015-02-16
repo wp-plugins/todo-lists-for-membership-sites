@@ -11,6 +11,11 @@ License: GPLv2 or later
 
 class WPTodoList{
 	public function __construct(){
+		global $wpdb,$ip_id,$userid,$todolist_task_disappear;		
+		$ip_id = $_SERVER['REMOTE_ADDR'];
+		$userid 	= get_current_user_id();
+		$todolist_task_disappear = esc_attr(get_option('todolist_task_disappear'));
+
 		register_activation_hook(__FILE__, array($this, 'todolists_register_activation'));
 		add_action('wpmu_new_blog', array($this,'new_blog'), 10, 6);
 		add_action('init', array($this, 'todolists_init'));
@@ -33,6 +38,154 @@ class WPTodoList{
 		add_action('wp_ajax_nopriv_todolists_import', array($this, 'todolists_import_wp_ajax_nopriv_todolists'));
 		require_once("widget/widget-todolist.php");
 		add_action('widgets_init', array($this, 'tdl_register_widget'));
+		add_action('wp_ajax_completetask', array($this, 'completetask_callback') );
+		add_action('wp_ajax_nopriv_completetask', array($this, 'completetask_callback') );
+		add_action('draft_to_publish', array($this, 'completetask_reopen'));	
+		
+
+	}
+	public function completetask_callback() {
+		global $wpdb,$ip_id,$todolist_task_disappear,$userid ;
+		
+		$userid 	= get_current_user_id();
+
+
+		$task_id = $_POST['taskid'];
+		$status = $_POST["status"];
+		
+		if($todolist_task_disappear == "on" && is_super_admin( $userid ) )
+		{	
+			
+			
+			$type = 'draft';
+
+			
+			if ( is_user_logged_in() ) { 
+
+				$select_task = $wpdb->get_results("SELECT user_id FROM ".$wpdb->prefix."todolists_usertask WHERE user_id = '".$userid."' AND task_id = '".$task_id."'");						
+
+				$update_task = "UPDATE " . $wpdb->prefix . "todolists_usertask SET status='true', type='$type', completiondate=NOW() where user_id='$userid' AND task_id='$task_id'";						
+
+				$insert_task = "INSERT IGNORE INTO " . $wpdb->prefix . "todolists_usertask SET user_id='$userid', task_id='$task_id',  status='$status', type='$type', completiondate=NOW()";					
+
+				$delete_task = "DELETE FROM " . $wpdb->prefix . "todolists_usertask WHERE user_id='$userid' AND task_id='$task_id'";						
+
+			}else{
+
+				$select_task = $wpdb->get_results("SELECT ip_id FROM ".$wpdb->prefix."todolists_iptask WHERE ip_id = '".$ip_id."' AND task_id = '".$task_id."'");				
+						
+				$update_task = "UPDATE " . $wpdb->prefix . "todolists_iptask SET status='true', type='$type', completiondate=NOW() where ip_id='$ip_id' AND task_id='$task_id'";				
+
+				$insert_task = "INSERT IGNORE INTO " . $wpdb->prefix . "todolists_iptask SET ip_id='$ip_id', task_id='$task_id', status='$status',type='$type', completiondate=NOW()";				
+
+				$delete_task = "DELETE FROM " . $wpdb->prefix . "todolists_iptask WHERE ip_id='$ip_id' AND task_id='$task_id'";					
+
+			}
+			
+			if($status == "true")
+			{	
+				if(count($result) > 0) { $wpdb->query($update_task); } //update
+				
+				else{	$wpdb->query($insert_task);	}//insert
+			}
+			else
+			{
+				$wpdb->query($delete_task);	//delete
+			}		
+
+
+			
+			$todolist_email_notification = esc_attr(get_option('todolist_email_notification'));
+			if($todolist_email_notification == "on")
+			{
+				$todolist_email_address = esc_attr(get_option('todolist_email_address'));
+				$todolist_email_address = explode(',', $todolist_email_address);
+				$title = get_the_title($task_id);
+				$message = "One of your task name " . $title . " is completed";
+				wp_mail($todolist_email_address, 'Task Completed', $message);
+			}
+			echo "on";
+		}
+		else
+		{
+			$task_id = $_POST['taskid'];
+			$status = $_POST["status"];
+			$userid = get_current_user_id();
+			$type = 'publish';
+			if ( is_user_logged_in() ) { 
+
+				$result = $wpdb->get_results("SELECT user_id FROM ".$wpdb->prefix."todolists_usertask WHERE user_id = '".$userid."' AND task_id = '".$task_id."'");						
+
+			}else{
+
+				$result = $wpdb->get_results("SELECT ip_id FROM ".$wpdb->prefix."todolists_iptask WHERE ip_id = '".$ip_id."' AND task_id = '".$task_id."'");			
+
+			}
+
+			
+			if($status == "true")
+			{
+				if(count($result) > 0)
+				{	
+					if ( is_user_logged_in() ) { 
+
+						$sql = "UPDATE " . $wpdb->prefix . "todolists_usertask SET status='true', type='$type', completiondate=NOW() where user_id='$userid' AND task_id='$task_id'";					
+
+					}else{
+
+						$sql = "UPDATE " . $wpdb->prefix . "todolists_iptask SET status='true', type='$type', completiondate=NOW() where ip_id='$ip_id' AND task_id='$task_id'";			
+
+					}
+
+					echo $sql;
+					$wpdb->query($sql);			
+				}
+				else
+				{	
+					if ( is_user_logged_in() ) { 
+
+						$sql = "INSERT IGNORE INTO " . $wpdb->prefix . "todolists_usertask SET user_id='$userid', task_id='$task_id', status='$status', type='$type', completiondate=NOW()";					
+
+					}else{
+
+						$sql = "INSERT IGNORE INTO " . $wpdb->prefix . "todolists_iptask SET ip_id='$ip_id', task_id='$task_id', status='$status', type='$type', completiondate=NOW()";			
+
+					}
+					echo $sql;
+					$wpdb->query($sql);				
+				}
+			}
+			else
+			{
+				if ( is_user_logged_in() ) { 
+
+						$sql = "DELETE FROM " . $wpdb->prefix . "todolists_usertask WHERE user_id='$userid' AND task_id='$task_id'";						
+
+					}else{
+
+						$sql = "DELETE FROM " . $wpdb->prefix . "todolists_iptask WHERE ip_id='$ip_id' AND task_id='$task_id'";					
+
+					}
+			}
+			$todolist_email_notification = esc_attr(get_option('todolist_email_notification'));
+			if($todolist_email_notification == "on")
+			{
+				$todolist_email_address = esc_attr(get_option('todolist_email_address'));
+				$todolist_email_address = explode(',', $todolist_email_address);
+				$title = get_the_title($task_id);
+				$message = "One of your task name " . $title . " is completed";
+				wp_mail($todolist_email_address, 'Task Completed', $message);
+			}			
+			echo "off";
+		}
+		die();
+	}
+	public function completetask_reopen($post) {
+		global $wpdb;
+		//print_r($post);
+		$userid = get_current_user_id();
+		$sql = "DELETE FROM " . $wpdb->prefix . "todolists_usertask WHERE user_id='$userid' AND task_id='".$post->ID."'";				
+		$wpdb->query($sql);
 	}
 
 	public function tdl_register_widget(){
@@ -249,6 +402,11 @@ LIMIT 1");
 	}
 
 	public function tdl_download_xml(){
+		register_setting('todolist_settings_options_page', 'todolist_footer_text');
+		register_setting('todolist_settings_options_page', 'todolist_email_notification');		
+		register_setting('todolist_settings_options_page', 'todolist_email_address');
+		register_setting('todolist_settings_options_page', 'todolist_task_disappear');
+		
 		if(isset($_GET['export']) && $_GET['export'] == 'XML'){
 			$arraycatlist 	= explode(",", $_GET['catids']);
 			$filename 		= "todolist_" . date("YmdHis") . ".xml";
@@ -291,7 +449,10 @@ LIMIT 1");
 			exit();
 		}
 	}
-
+	public function todolist_validate_settings($input)
+	{
+		  return true;
+	}
 	public function tdl_button($views){
 		$views['my-button'] = '<span id="tdl_button_extra"><button id="tdl_button_exportxml" class="button button-primary" style="margin: 1px 8px 0 0;">Export to XML</button><button id="tdl_button_importxml" class="button button-primary" style="margin: 1px 8px 0 0;">Import from XML</button></span>';
    	 	return $views;
@@ -543,6 +704,55 @@ LIMIT 1");
 		    'todolists_ordertask',
 		    array($this, 'todolists_ordertask_callback')
 		);
+		add_submenu_page(
+		    'edit.php?post_type=task',
+		    'To Do List Member Settings',
+		    'Settings',
+		    'manage_options',
+		    'todolist_settings',
+		    array($this, 'todolist_settings_page')
+		);		
+	}
+	public function todolist_settings_page()
+	{
+		$checked_footer = "";
+		$checked_email_notification = "";
+		echo "<div class='section panel'>";
+			echo "<h1>To Do List Options</h1>";
+			echo "<form method='post' enctype='multipart/form-data' action='options.php'>";
+				settings_fields('todolist_settings_options_page');
+				$footer_text = esc_attr(get_option('todolist_footer_text'));
+				$checked_email_notification = esc_attr(get_option('todolist_email_notification'));
+				$todolist_email_address = esc_attr(get_option('todolist_email_address'));
+				$todolist_task_disappear = esc_attr(get_option('todolist_task_disappear'));
+				
+				if($footer_text == "on"){ $checked_footer = "checked"; }
+				if($checked_email_notification == "on"){ $checked_email_notification = "checked"; }
+				if($todolist_task_disappear == "on" && is_super_admin( $userid ) ){ $todolist_task_disappear = "checked"; }
+				echo "<table class='form-table'>";
+					echo "<tr valign='top'>";
+						echo "<th scope='row'>Remove Footer Text</th>";
+						echo "<td><input type='checkbox' name='todolist_footer_text' id='todolist_footer_text'".$checked_footer."/></td>";
+					echo "</tr>";
+					
+					echo "<tr valign='top'>";
+						echo "<th scope='row'>Task Complete Email Notification</th>";
+						echo "<td><input type='checkbox' name='todolist_email_notification' id='todolist_email_notification'".$checked_email_notification."/></td>";
+					echo "</tr>";
+					
+					echo "<tr valign='top'>";
+						echo "<th scope='row'>Email Address For Task Complete Notification</th>";
+						echo "<td><input type='text' name='todolist_email_address' id='todolist_email_address' value='".$todolist_email_address."'/></td>";
+					echo "</tr>";
+
+					/*echo "<tr valign='top'>";
+						echo "<th scope='row'>Make tasks disappear after checked</th>";
+						echo "<td><input type='checkbox' name='todolist_task_disappear' id='todolist_task_disappear'".$todolist_task_disappear."/></td>";
+					echo "</tr>"; */	
+				echo "</table>";
+				submit_button();
+			echo "</form>";
+		echo "</div>";
 	}
 
 	public function todolists_ordertask_callback(){
@@ -679,11 +889,23 @@ LIMIT 1");
 				  user_id int(11) NOT NULL,
 				  task_id int(11) NOT NULL,
 				  status varchar(10) NOT NULL,
+				  type varchar(15) NOT NULL,
 				  completiondate datetime NOT NULL,
 				  PRIMARY KEY (user_id,task_id)
 				);";
 
 		dbDelta($sql);
+
+		$wpdb->query( "CREATE TABLE " . $wpdb->prefix . "todolists_iptask (
+				  ip_id varchar(255) NOT NULL,
+				  task_id int(11) NOT NULL,
+				  status varchar(10) NOT NULL,
+				  type varchar(15) NOT NULL,
+				  completiondate datetime NOT NULL,
+				  PRIMARY KEY (ip_id,task_id)
+				)" );
+
+		dbDelta($sql1);
 	}
 	
 	public function todolists_init(){
@@ -783,12 +1005,25 @@ LIMIT 1");
 		
 		<script type="text/javascript">
 			jQuery(document).ready(function() {
-			  jQuery(".todolists_content").hide();
-			  jQuery(".todolists_heading").click(function()
-			  {
-   			    jQuery(this).children(".todolists_plus").toggle();
-				jQuery(this).next(".todolists_content").slideToggle(500);
-			  });
+				if(jQuery(".widget_todolists_content").length)
+				{
+					jQuery(".widget_todolists_content").hide();
+				}
+				if(jQuery(".widget_todolists_heading").length)
+				{
+					  jQuery(".widget_todolists_heading").click(function()
+					  {
+						jQuery(this).children(".widget_todolists_plus").toggle();
+						jQuery(this).next(".widget_todolists_content").slideToggle(500);
+					  });					
+				}				
+			
+				  jQuery(".todolists_content").hide();
+				  jQuery(".todolists_heading").click(function()
+				  {
+					jQuery(this).children(".todolists_plus").toggle();
+					jQuery(this).next(".todolists_content").slideToggle(500);
+				  });
 			});
 		</script>
 		
@@ -845,27 +1080,79 @@ LIMIT 1");
 	}
 	
 	public function todolists_wp_ajax_nopriv_updatetask(){
-		global $wpdb;
-
-		$taskid = $_POST["taskid"];
-		$status = $_POST["status"];
-
+		global $wpdb,$ip_id,$todolist_task_disappear;
+		
+		
+		
 		$userid = get_current_user_id();
 
-		if($status == "true"){
-			$sql = "INSERT IGNORE INTO " . $wpdb->prefix . "todolists_usertask SET user_id='$userid', task_id='$taskid', status='$status', completiondate=NOW()";
-			$wpdb->query($sql);
-		}else{
-			$sql = "DELETE FROM " . $wpdb->prefix . "todolists_usertask WHERE user_id='$userid' AND task_id='$taskid'";
-			$wpdb->query($sql);
+		$task_id = $_POST['taskid'];
+		$status = $_POST["status"];
+
+		if($todolist_task_disappear == "on" && is_super_admin( $userid ) )
+		{			
+			
+			$type = 'draft';
+
+			$disappear = "yes";
+		}		
+		else
+		{			
+			$type ='publish';
+		
+			$disappear = "no";
 		}
+
+
+		if ( is_user_logged_in() ) { 
+
+			$select_task = $wpdb->get_results("SELECT user_id FROM ".$wpdb->prefix."todolists_usertask WHERE user_id = '".$userid."' AND task_id = '".$task_id."'");						
+
+			$update_task = "UPDATE " . $wpdb->prefix . "todolists_usertask SET status='true', type='$type', completiondate=NOW() where user_id='$userid' AND task_id='$task_id'";						
+
+			$insert_task = "INSERT IGNORE INTO " . $wpdb->prefix . "todolists_usertask SET user_id='$userid', task_id='$task_id',  status='$status', type='$type', completiondate=NOW()";					
+
+			$delete_task = "DELETE FROM " . $wpdb->prefix . "todolists_usertask WHERE user_id='$userid' AND task_id='$task_id'";						
+
+		}else{
+
+			$select_task = $wpdb->get_results("SELECT ip_id FROM ".$wpdb->prefix."todolists_iptask WHERE ip_id = '".$ip_id."' AND task_id = '".$task_id."'");				
+					
+			$update_task = "UPDATE " . $wpdb->prefix . "todolists_iptask SET status='true', type='$type', completiondate=NOW() where ip_id='$ip_id' AND task_id='$task_id'";				
+
+			$insert_task = "INSERT IGNORE INTO " . $wpdb->prefix . "todolists_iptask SET ip_id='$ip_id', task_id='$task_id', status='$status',type='$type', completiondate=NOW()";				
+
+			$delete_task = "DELETE FROM " . $wpdb->prefix . "todolists_iptask WHERE ip_id='$ip_id' AND task_id='$task_id'";					
+
+		}
+			
+		if($status == "true")
+		{	
+			if(count($result) > 0) { $wpdb->query($update_task); } //update
+			
+			else{	$wpdb->query($insert_task);	}//insert
+		}
+		else
+		{
+			$wpdb->query($delete_task);	//delete
+		}		
+
+
+
+
+
+
+
+
+
+
 
 		require_once("code/form_todolist_user.php");
 		$form 	= new WPTodoList_FormTodoList();
-		$listid = $form->get_tasklistid($taskid);
+		$listid = $form->get_tasklistid($task_id);
 		
 		$taskcountdetails = $form->get_taskcountdetails($listid);
-		echo $taskcountdetails["completed"] . "_" . $taskcountdetails["total"] . "_" . $taskcountdetails["percent"] . "_" . $listid;
+		echo $taskcountdetails["completed"] . "_" . $taskcountdetails["total"] . "_" . $taskcountdetails["percent"] . "_" . $listid . "_" . $disappear;
 		die();
 	}
 	
@@ -878,17 +1165,23 @@ LIMIT 1");
 	public function todolists_wp_ajax_nopriv_todolists(){
 		echo "<div id='todolists'><div>";
 		$terms = get_terms( 'listcategory', 'hide_empty=0&parent=0' );
-		echo "<table>";
+		echo "<table style='float:left'>";
 		foreach($terms as $term){
 			echo "<tr><td>" . $term->name . "</td><td><button class='todolists_listid' id='" . $term->term_id . "'>Insert</button></td></tr>";
 		}
+		
 		echo "</table>";
+		
 		die();
 	}
 
 	function todolists_footer(){
-		$content = '<div style="width: 100%; text-align: center; font-size: 10px; height: 15px; position: relative;">Powered by <a href="http://www.watchmanadvisors.com/to-do-list-member-wordpress-plugin/" target="_blank">"To Do List Member"</a></div>';
-		echo $content;
+		$footer_text = esc_attr(get_option('todolist_footer_text'));
+		if($footer_text != "on")
+		{
+			$content = '<div style="width: 100%; text-align: center; font-size: 10px; height: 15px; position: relative;">Powered by <a href="http://www.watchmanadvisors.com/to-do-list-member-wordpress-plugin/" target="_blank">"To Do List Member"</a></div>';
+			echo $content;
+		}	
 	}
 }
 new WPTodoList();

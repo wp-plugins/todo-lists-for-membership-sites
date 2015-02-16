@@ -43,8 +43,9 @@ class WPTodoList_Shortcodes
 	{
 		require_once("form_todolist_user.php");
 		$form = new WPTodoList_FormTodoList();
-
+		
 		extract(shortcode_atts(array('id' => '0'), $atts));
+
 		return $form->get_tasklist($id);
 	}
 	
@@ -53,7 +54,8 @@ class WPTodoList_Shortcodes
 		require_once("form_todolist_user.php");
 		$form = new WPTodoList_FormTodoList();
 		
-		extract(shortcode_atts(array('id' => '0'), $atts));
+		extract(shortcode_atts(array('id' => '0'), $atts));	
+		
 		return $form->get_progressbar($id);
 	}
 }

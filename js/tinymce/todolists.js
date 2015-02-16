@@ -7,14 +7,24 @@
 	jQuery.get(window.todolists_ajaxurl, ajaxdata, function(data)
 	{
 		jQuery(data).appendTo("body").hide();
+
+       
+
 		jQuery(".todolists_listid").click(function()
 		{
 			var listid = jQuery(this).attr("id");
-			tinyMCE.activeEditor.execCommand('mceInsertContent', false, '[' + window.todolists_currentshortcode + ' id="' + listid + '"]');
+
+            
+alert(listid);
+			tinyMCE.activeEditor.execCommand('mceInsertContent', false, '[' + window.todolists_currentshortcode + ' id="' + listid + '" ]');
 			tb_remove();
 		});
 
 	});
+
+
+    
+
 
     tinymce.create('tinymce.plugins.TodoLists', {
         init : function(ed, url) {
@@ -38,6 +48,7 @@
 
                 }
             });
+            
         },
         createControl : function(n, cm) {
             return null;
