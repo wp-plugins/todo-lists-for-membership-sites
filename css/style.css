@@ -1,0 +1,21 @@
+.membertodo_admin_table td, .membertodo_admin_table th
+{
+	vertical-align: top;
+	text-align: left;
+}
+.membertodo_admin_table .submit
+{
+	padding: 0px;
+}
+.membertodo_categorylist_table tbody, .membertodo_tasklist_table tbody
+{
+	min-height: 50px;
+	vertical-align: top;
+	text-align: left;
+}
+
+.membertodo_categorylist_table td, .membertodo_tasklist_table td
+{
+	vertical-align: top;
+	text-align: left;
+}
