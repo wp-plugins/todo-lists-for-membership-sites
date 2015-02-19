@@ -58,6 +58,13 @@ Yes.
 
 == Changelog ==
 
+= 1.5 =
+* Updated and tested plugin to recent version of Wordpress core
+* Updated unique user login access so the tasks and progress bar uniquely update per user when logged in
+* Fixed issues of logged out users having the ability to use task lists and progress bars.
+* Updated plugin core to have the task lists and progress bars when presented on a page or post to have the checkboxes simultaneously update at the same time.
+* Fixed bugs with progress bar loading in widget.
+
 = 1.4 =
 * Multiple features added for import and export, widget and more
 
